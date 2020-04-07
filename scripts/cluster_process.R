@@ -51,7 +51,7 @@ ticker.cluster.info <- function(hc, k = NULL, h = NULL, SnP500.info){
   clusters <- cutree(hc, k = k, h = h)
   df <- data.frame(t(ticker.matchings),clusters)
   
-  cluster.counts <- xyz <- sapply(unique(df$clusters), function(i) c(i,sum(df$clusters == i)))
+  cluster.counts <- sapply(unique(df$clusters), function(i) c(i,sum(df$clusters == i)))
   cluster.counts <- data.frame(t(cluster.counts))
   names(cluster.counts) <- c("cluster","count")
   
