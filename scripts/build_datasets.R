@@ -4,6 +4,7 @@ library(BatchGetSymbols) # stock prices
 
 SnP500.info <- htmltab("https://en.wikipedia.org/wiki/List_of_S%26P_500_companies",1)
 countries.info <- htmltab("https://meta.wikimedia.org/wiki/List_of_countries_by_regional_classification",1)
+names(countries.info)[3] <- "Development"
 
 SnP500.data <- function(date.from, date.to, quiet = FALSE){
   #'SnP500 data 
@@ -33,28 +34,8 @@ SnP500.data <- function(date.from, date.to, quiet = FALSE){
   return(subset(df, select = -ref.date))
 }
 
-ticker.to.sector <- function(ticker,SnP500.info){
-  #'Get ticker sector and sub-industry
-  #'
-  #'@param ticker string
-  #'@param SnP500.info data frame
-  
-  i <- which(SnP500.info$Symbol == ticker)
-  return(list(sector = SnP500.info[i,]$`GICS Sector`,
-              Industry = SnP500.info$`GICS Sub Industry`,
-              headquaters = SnP500.info$`Headquarters Location`))
-}
-
-
-country.to.region <- function(country, countries.info){
-  #'Get 
-  #'
-  #'@param country string 
-  #'@param countries.info data frame
-  
-}
-
 COVID19.global <- function(){
+  require(docstring)
   #' COVID-19 deaths by country
   #' 
   #' Reads data from Johns Hopkins GitHub repo. Returns T x p panel. 
@@ -75,8 +56,7 @@ COVID19.global <- function(){
   df.confirmed <- sapply(countries.confirmed, function(i) colSums(df.confirmed[df.confirmed$Country.Region == i,-1]))
   df.confirmed <- data.frame(df.confirmed)
   names(df.confirmed) <- countries.confirmed
-  df.confirmed <- df.confirmed[,-which(apply(df.confirmed, 2, function(i) (min(i) == max(i))) == TRUE)]
-  
+
   df.recovered <- "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_recovered_global.csv"
   df.recovered <- subset(read.csv(df.recovered), select =  -c(Province.State, Lat, Long))
   countries.recovered <- unique(df.recovered$Country.Region)

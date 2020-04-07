@@ -1,6 +1,7 @@
 library(docstring) # EZ documentation
 library(snow); library(parallel) # parallel processing
 library(pbapply) # lovely progress bar
+library(not) # fit linear skeleton
 
 skeleton.similarity <- function (X, set.contrast, parallel.comp = TRUE) {
   #'Skeleton similarity
