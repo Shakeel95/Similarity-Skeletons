@@ -3,8 +3,15 @@ library(htmltab) # extract html tables
 library(BatchGetSymbols) # stock prices
 
 SnP500.info <- htmltab("https://en.wikipedia.org/wiki/List_of_S%26P_500_companies",1)
+
 countries.info <- htmltab("https://meta.wikimedia.org/wiki/List_of_countries_by_regional_classification",1)
 names(countries.info)[3] <- "Development"
+
+countries.population <- htmltab("https://en.wikipedia.org/wiki/List_of_countries_and_dependencies_by_population",1)[,2:3]
+names(countries.population) <- c("Country","Population")
+countries.population$Country <- substring(countries.population$Country,2)
+countries.population$Population <- as.numeric(gsub(",","",countries.population$Population[1]))
+countries.population$Population <- as.numeric(countries.population$Population)
 
 SnP500.data <- function(date.from, date.to, quiet = FALSE){
   #'SnP500 data 
