@@ -49,5 +49,5 @@ Sigma <- function(t){
   #'
   #'@param t 
   
-  return(0.1*diag(4))
+  return(0.1*diag(6))
 }

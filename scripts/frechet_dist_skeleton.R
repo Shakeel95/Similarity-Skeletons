@@ -12,6 +12,7 @@ skeleton.similarity <- function (X, set.contrast, parallel.comp = TRUE) {
   #'@param X matrix or dataframe of dimension (T x p)
   #'@param set.contrast contrast function used in the NOT algorithm. Choice of "pcwsConstMean", "pcwsLinMean"
   #'@param parallel.comp if TRUE similarity dmatrix is computed in parallel
+  #'@param verbose
   
   
   frechet <- function (idxs, skeletons) {
@@ -38,12 +39,10 @@ skeleton.similarity <- function (X, set.contrast, parallel.comp = TRUE) {
   }
   
   if (parallel.comp){
-    print("fitting time series skeletons (in parallel)")
     cl <- makeSOCKcluster(rep("localhost",detectCores()-1))
     skeletons <- parLapply(cl,1:ncol(X),not.skeleton, df = X, set.contrast = set.contrast)
     stopCluster(cl)
   } else {
-    print("fitting time series skeletons")
     skeletons <- pblapply(1:ncol(X),not.skeleton, df = X, set.contrast = set.contrast)
   }
   
@@ -61,4 +60,49 @@ skeleton.similarity <- function (X, set.contrast, parallel.comp = TRUE) {
   class(d) <- "dist"
   
   return(d)
+}
+
+
+skeleton.similarity.comp <- function(x, X, set.contrast, parallel.comp = TRUE){
+  #'
+  #'
+  #'@param X 
+  #'@param x 
+  #'@param set.contrast
+  #'@param parallel.comp
+  
+  frechet <- function (i,skeletons,Q) {
+    # Frechet distance between two time series skeletons
+    
+    P <- skeletons[[i]]
+    max.cpt.dist <- max(sapply(c(P$cpt,Q$cpt),
+                               function(i) abs(P$skeleton[i] - Q$skeleton[i])))
+    if (anyNA(max.cpt.dist)) return(1)
+    else return(max.cpt.dist)
+  }
+  
+  
+  not.skeleton <- function(i, df, set.contrast) {
+    # Construct skeleton using NOT algorithm
+    
+    require(not)
+    w <- not(df[,i], contrast = set.contrast)
+    x.fit <- predict(w)
+    return(list(skeleton = (x.fit - min(x.fit))/(max(x.fit - min(x.fit))),
+                cpt = features(w)$cpt))
+  }
+  
+  w <- not(x, contrast = set.contrast)
+  x.fit <- predict(w)
+  Q <- list(skeleton = (x.fit - min(x.fit))/(max(x.fit - min(x.fit))),cpt = features(w)$cpt)
+  
+  if (parallel.comp){
+    cl <- makeSOCKcluster(rep("localhost",detectCores()-1))
+    skeletons <- parLapply(cl,1:ncol(X),not.skeleton, df = X, set.contrast = set.contrast)
+    stopCluster(cl)
+  } else {
+    skeletons <- pblapply(1:ncol(X),not.skeleton, df = X, set.contrast = set.contrast)
+  }
+  
+  sapply(1:ncol(X),frechet, skeletons = skeletons, Q = Q)
 }
